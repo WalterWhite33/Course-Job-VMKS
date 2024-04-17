@@ -1,0 +1,35 @@
+#include <RF24.h>
+
+RF24 radio(9, 10); // nRF24L01 (CE, CSN)
+const byte address[6] = "00001";
+
+struct JoystickData {
+  byte j1PotX;
+  byte j1PotY;
+  byte j2PotX;
+  byte j2PotY;
+};
+
+JoystickData joystickData;
+
+void setup() {
+  Serial.begin(9600);
+  radio.begin();
+  radio.openWritingPipe(address);
+  radio.setAutoAck(false);
+  radio.setDataRate(RF24_250KBPS);
+  radio.setPALevel(RF24_PA_MAX);
+}
+
+void loop() {
+  // Read joystick values
+  joystickData.j1PotX = map(analogRead(A0), 0, 1023, 0, 255); // Joystick 1 X axis
+  joystickData.j1PotY = map(analogRead(A1), 0, 1023, 0, 255); // Joystick 1 Y axis
+  joystickData.j2PotX = map(analogRead(A2), 0, 1023, 0, 255); // Joystick 2 X axis
+  joystickData.j2PotY = map(analogRead(A3), 0, 1023, 0, 255); // Joystick 2 Y axis
+
+  // Send joystick data
+  radio.write(&joystickData, sizeof(joystickData));
+
+  delay(100); // Adjust delay as needed
+}
